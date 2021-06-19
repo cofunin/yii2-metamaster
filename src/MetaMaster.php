@@ -30,6 +30,10 @@ class MetaMaster extends Component
     /**
      * @var string
      */
+    public $site;
+    /**
+     * @var string
+     */
     public $web = "@app/web";
     /**
      * @var string
@@ -89,6 +93,16 @@ class MetaMaster extends Component
     public function setSiteName(string $siteName)
     {
         $this->siteName = $siteName;
+        return $this;
+    }
+
+    /** Site setter
+     * @param $site
+     * @return $this
+     */
+    public function setSite(string $site)
+    {
+        $this->site = $site;
         return $this;
     }
 
@@ -187,7 +201,7 @@ class MetaMaster extends Component
         $this->view->registerMetaTag(['property' => 'og:url', 'content' => $this->url ?: $this->getAbsoluteUrl()]);
         $this->view->registerMetaTag(['name' => 'twitter:card', 'content' => 'summary']);
         $this->view->registerMetaTag(['name' => 'twitter:domain', 'content' => $this->getAbsoluteUrl('')]);
-        $this->view->registerMetaTag(['name' => 'twitter:site', 'content' => $this->siteName]);
+        $this->view->registerMetaTag(['name' => 'twitter:site', 'content' => $this->site]);
         $this->view->registerLinkTag(['rel' => 'canonical', 'href' => $this->url ?: $this->getAbsoluteUrl()]);
     }
 
