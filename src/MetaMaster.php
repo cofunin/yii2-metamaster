@@ -186,9 +186,8 @@ class MetaMaster extends Component
     {
         $this->view = $view;
         $this->registerCoreInfo();
-        $this->registerTitle();
-        $this->registerDescription();
-        $this->registerImage();
+        $this->registerOpenGraph();
+        $this->registerTwitterCard();
     }
 
     /**
@@ -196,12 +195,14 @@ class MetaMaster extends Component
      */
     private function registerCoreInfo()
     {
-        $this->view->registerMetaTag(['property' => 'og:site_name', 'content' => $this->siteName]);
-        $this->view->registerMetaTag(['property' => 'og:type', 'content' => $this->type]);
-        $this->view->registerMetaTag(['property' => 'og:url', 'content' => $this->url ?: $this->getAbsoluteUrl()]);
-        $this->view->registerMetaTag(['name' => 'twitter:card', 'content' => 'summary']);
-        $this->view->registerMetaTag(['name' => 'twitter:domain', 'content' => $this->getAbsoluteUrl('')]);
-        $this->view->registerMetaTag(['name' => 'twitter:site', 'content' => $this->site]);
+        if ($this->title) {
+            $this->view->title = $this->title;
+        }
+
+        if ($this->description) {
+            $this->view->registerMetaTag(['name' => 'description', 'content' => $this->description]);
+        }
+
         $this->view->registerLinkTag(['rel' => 'canonical', 'href' => $this->url ?: $this->getAbsoluteUrl()]);
     }
 
@@ -219,53 +220,52 @@ class MetaMaster extends Component
         return preg_replace('/https|http/', $this->protocol, $absoluteUrl, -1, $count);
     }
 
-    /**
-     * Register title
-     */
-    private function registerTitle()
+    private function getImage()
+    {
+        return $this->image ?: $this->defaultImage;
+    }
+
+    private function registerOpenGraph()
     {
         if ($this->title) {
-            $this->view->title = $this->title;
             $this->view->registerMetaTag(['property' => 'og:title', 'content' => $this->title]);
-            $this->view->registerMetaTag(['itemprop' => 'name', 'content' => $this->title]);
+        }
+
+        if ($this->description) {
+            $this->view->registerMetaTag(['property' => 'og:description', 'content' => $this->description]);
+        }
+
+        $this->view->registerMetaTag(['property' => 'og:site_name', 'content' => $this->siteName]);
+        $this->view->registerMetaTag(['property' => 'og:type', 'content' => $this->type]);
+        $this->view->registerMetaTag(['property' => 'og:url', 'content' => $this->url ?: $this->getAbsoluteUrl()]);
+
+        if ($image = $this->getImage()) {
+            $this->view->registerMetaTag(['property' => 'og:image', 'content' => $this->getAbsoluteUrl($image)]);
+
+            $path = Yii::getAlias($this->imagePath ?: $this->web . $image);
+            if ($this->imagePath) {
+                $path = $this->imagePath;
+            }
+            if (file_exists($path)) {
+                $imageSize = getimagesize($path);
+                $this->view->registerMetaTag(['property' => 'og:image:width', 'content' => $imageSize[0]]);
+                $this->view->registerMetaTag(['property' => 'og:image:height', 'content' => $imageSize[1]]);
+            }
         }
     }
 
-    /**
-     * Register description
-     */
-    private function registerDescription()
+    private function registerTwitterCard()
     {
         if ($this->description) {
-            $this->view->registerMetaTag(['name' => 'description', 'content' => $this->description]);
-            $this->view->registerMetaTag(['property' => 'og:description', 'content' => $this->description]);
             $this->view->registerMetaTag(['name' => 'twitter:description', 'content' => $this->description]);
-
-        }
-    }
-
-    /**
-     * Register image
-     */
-    private function registerImage()
-    {
-        $image = $this->image ?: $this->defaultImage;
-        if ($image) {
-            $imageUrl = $this->getAbsoluteUrl($image);
-            $this->view->registerMetaTag(['property' => 'og:image', 'content' => $imageUrl]);
-            $this->view->registerMetaTag(['property' => 'twitter:image:src', 'content' => $imageUrl]);
-            $this->view->registerMetaTag(['itemprop' => 'image', 'content' => $imageUrl]);
-
         }
 
-        $path = Yii::getAlias($this->imagePath ?: $this->web . $image);
-        if ($this->imagePath) {
-            $path = $this->imagePath;
-        }
-        if (file_exists($path)) {
-            $imageSize = getimagesize($path);
-            $this->view->registerMetaTag(['property' => 'og:image:width', 'content' => $imageSize[0]]);
-            $this->view->registerMetaTag(['property' => 'og:image:height', 'content' => $imageSize[1]]);
+        $this->view->registerMetaTag(['name' => 'twitter:card', 'content' => 'summary']);
+        $this->view->registerMetaTag(['name' => 'twitter:domain', 'content' => $this->getAbsoluteUrl('')]);
+        $this->view->registerMetaTag(['name' => 'twitter:site', 'content' => $this->site]);
+
+        if ($image = $this->getImage()) {
+            $this->view->registerMetaTag(['name' => 'twitter:image', 'content' => $this->getAbsoluteUrl($image)]);
         }
     }
 
